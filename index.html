@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LMS SMAN 3 Tapung Hulu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2dd4bf', // Teal/Cyan matching the logo's inner circle roughly
+                        primaryDark: '#0e7490',
+                        accent: '#f59e0b', // Gold/Orange matching the wings/ribbon
+                        accentDark: '#d97706',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f0fdfa; /* Very light cyan */
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="text-gray-800 antialiased min-h-screen flex items-center justify-center p-4">
+
+    <!-- LOGIN CONTAINER -->
+    <div id="loginView" class="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 fade-in border-t-8 border-primary relative overflow-hidden">
+        
+        <!-- Decorative Header Background -->
+        <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-primary/20 to-transparent -z-10"></div>
+        
+        <div class="text-center mb-8 pt-4">
+            <div class="w-24 h-24 mx-auto bg-white rounded-full border-4 border-accent shadow-md flex items-center justify-center mb-4 overflow-hidden">
+                <img src="https://cdn.phototourl.com/member/2026-10-22-807db4f8-e31f-4ee0-a6d3-440b8bb6922f.png" alt="Logo SMAN 3 Tapung Hulu" class="w-full h-full object-cover">
+            </div>
+            <h1 class="text-2xl font-bold text-primaryDark">Portal LMS</h1>
+            <p class="text-sm text-gray-500 mt-1">SMAN 3 Tapung Hulu</p>
+        </div>
+
+        <div id="errorMessage" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-3 mb-4 text-sm rounded">
+            Username atau password salah!
+        </div>
+
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="mb-4">
+                <label for="username" class="block text-sm font-semibold text-gray-700 mb-1">Username</label>
+                <input type="text" id="username" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition" placeholder="Masukkan username" required>
+            </div>
+            
+            <div class="mb-6">
+                <label for="password" class="block text-sm font-semibold text-gray-700 mb-1">Password</label>
+                <input type="password" id="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition" placeholder="Masukkan password" required>
+            </div>
+
+            <button type="submit" id="loginBtn" class="w-full bg-primary hover:bg-primaryDark text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:-translate-y-1">
+                MASUK
+            </button>
+        </form>
+
+        <p class="text-xs text-center text-gray-400 mt-8">
+            © 2026 SMAN 3 Tapung Hulu.
+        </p>
+    </div>
+
+    <!-- DASHBOARD CONTAINER -->
+    <div id="dashboardView" class="hidden w-full max-w-5xl fade-in">
+        
+        <!-- Navbar -->
+        <nav class="bg-white shadow-md rounded-xl p-4 mb-6 flex justify-between items-center border-b-4 border-accent">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold">
+                    S3
+                </div>
+                <div>
+                    <h2 class="font-bold text-gray-800 leading-tight">LMS SMAN 3 Tapung Hulu</h2>
+                    <p id="userRoleBadge" class="text-xs font-semibold text-accent uppercase tracking-wider">Role</p>
+                </div>
+            </div>
+            <div>
+                <button onclick="logout()" class="text-sm font-semibold text-gray-500 hover:text-red-500 transition px-3 py-2 rounded-md hover:bg-red-50">
+                    Keluar
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="bg-white rounded-xl shadow-lg p-6 min-h-[60vh]">
+            <div class="mb-6 border-b pb-4">
+                <h3 class="text-2xl font-bold text-gray-800">Selamat datang, <span id="userNameDisplay" class="text-primaryDark">Nama User</span>!</h3>
+                <p class="text-gray-500 mt-1">Berikut adalah dashboard <span id="roleText" class="font-semibold"></span> Anda hari ini.</p>
+            </div>
+
+            <!-- Dynamic Menu Grid -->
+            <div id="menuGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                <!-- Cards will be injected here based on role -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function handleLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value.trim();
+            const btn = document.getElementById('loginBtn');
+            const errorMsg = document.getElementById('errorMessage');
+
+            btn.innerText = "Memeriksa...";
+            btn.disabled = true;
+            errorMsg.classList.add('hidden');
+
+            // URL APPS SCRIPT DATABASE GOOGLE SHEET
+            const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz6wqbNms4814EaGetmihagvuSS-0gbptZsi5RPoaa5XP1poCdtR0ayaLuGb5GpO5DV/exec";
+
+            // Panggil API Backend Google Sheets
+            const apiUrl = `${APP_SCRIPT_URL}?action=login&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`;
+            
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    onLoginSuccess(data);
+                })
+                .catch(error => {
+                    onLoginError(error);
+                });
+        }
+
+        function onLoginSuccess(response) {
+            const btn = document.getElementById('loginBtn');
+            const errorMsg = document.getElementById('errorMessage');
+            
+            btn.innerText = "MASUK";
+            btn.disabled = false;
+
+            if (response.success) {
+                document.getElementById('loginView').classList.add('hidden');
+                document.getElementById('dashboardView').classList.remove('hidden');
+                
+                document.getElementById('userNameDisplay').innerText = response.name;
+                document.getElementById('userRoleBadge').innerText = response.role;
+                document.getElementById('roleText').innerText = response.role;
+
+                renderMenu(response.role);
+            } else {
+                errorMsg.innerText = response.message;
+                errorMsg.classList.remove('hidden');
+            }
+        }
+
+        function onLoginError(error) {
+            const btn = document.getElementById('loginBtn');
+            btn.innerText = "MASUK";
+            btn.disabled = false;
+            
+            const errorMsg = document.getElementById('errorMessage');
+            errorMsg.innerText = "Terjadi kesalahan jaringan.";
+            errorMsg.classList.remove('hidden');
+        }
+
+        function logout() {
+            document.getElementById('dashboardView').classList.add('hidden');
+            document.getElementById('loginView').classList.remove('hidden');
+            document.getElementById('loginForm').reset();
+        }
+
+        function renderMenu(role) {
+            const menuGrid = document.getElementById('menuGrid');
+            menuGrid.innerHTML = ''; // Kosongkan menu sebelumnya
+
+            let menus = [];
+
+            if (role === 'Admin') {
+                menus = [
+                    { title: 'Dasbor', icon: '🏠', desc: 'Ringkasan aktivitas LMS.' },
+                    { title: 'Manajemen Kelas', icon: '🏫', desc: 'Kelola ruang kelas dan jadwal.' },
+                    { title: 'Modul / Materi', icon: '📚', desc: 'Pusat materi pembelajaran.' },
+                    { title: 'Penugasan', icon: '✍️', desc: 'Pantau semua tugas masuk.' },
+                    { title: 'Evaluasi & Kuis', icon: '📝', desc: 'Kelola bank soal dan ujian.' },
+                    { title: 'Buku Nilai', icon: '📊', desc: 'Rekapitulasi nilai seluruh siswa.' },
+                    { title: 'Forum Diskusi', icon: '💬', desc: 'Komunikasi antar warga sekolah.' },
+                    { title: 'Daftar Pengguna', icon: '👥', desc: 'Manajemen akun pengguna LMS.' },
+                    { title: 'Absensi', icon: '✅', desc: 'Rekap kehadiran seluruh siswa.' }
+                ];
+            } else if (role === 'Guru') {
+                menus = [
+                    { title: 'Dasbor', icon: '🏠', desc: 'Ringkasan aktivitas mengajar.' },
+                    { title: 'Kelasku', icon: '🏫', desc: 'Akses kelas yang Anda ajar.' },
+                    { title: 'Materi Pembelajaran', icon: '📚', desc: 'Upload bahan ajar untuk siswa.' },
+                    { title: 'Penugasan', icon: '✍️', desc: 'Buat dan periksa tugas siswa.' },
+                    { title: 'Evaluasi & Kuis', icon: '📝', desc: 'Buat kuis dan ujian online.' },
+                    { title: 'Buku Nilai', icon: '📊', desc: 'Input dan rekap nilai kelas.' },
+                    { title: 'Forum Diskusi', icon: '💬', desc: 'Diskusi dengan siswa di kelas.' },
+                    { title: 'Peserta Didik', icon: '👥', desc: 'Lihat daftar siswa di kelas.' },
+                    { title: 'Absensi', icon: '✅', desc: 'Input kehadiran harian siswa.' }
+                ];
+            } else if (role === 'Murid') {
+                menus = [
+                    { title: 'Dasbor', icon: '🏠', desc: 'Ringkasan aktivitas belajar.' },
+                    { title: 'Ruang Belajar', icon: '🏫', desc: 'Masuk ke kelas online.' },
+                    { title: 'Materi Pembelajaran', icon: '📚', desc: 'Baca modul dari guru.' },
+                    { title: 'Tugas Saya', icon: '✍️', desc: 'Kerjakan dan kumpulkan tugas.' },
+                    { title: 'Kuis & Ujian', icon: '📝', desc: 'Ikuti evaluasi pembelajaran.' },
+                    { title: 'Nilai Saya', icon: '📊', desc: 'Lihat hasil evaluasi belajar.' },
+                    { title: 'Forum Diskusi', icon: '💬', desc: 'Tanya jawab dengan guru & teman.' },
+                    { title: 'Absensi', icon: '✅', desc: 'Cek persentase kehadiran saya.' }
+                ];
+            } else if (role === 'Wali Murid') {
+                menus = [
+                    { title: 'Dasbor', icon: '🏠', desc: 'Ringkasan aktivitas anak.' },
+                    { title: 'Tugas Anak', icon: '✍️', desc: 'Pantau tugas yang belum dikerjakan.' },
+                    { title: 'Nilai Anak', icon: '📊', desc: 'Lihat perkembangan akademik.' },
+                    { title: 'Forum Komunikasi', icon: '💬', desc: 'Kirim pesan ke wali kelas/guru.' },
+                    { title: 'Absensi Anak', icon: '✅', desc: 'Pantau kehadiran anak di sekolah.' }
+                ];
+            }
+
+            menus.forEach(menu => {
+                const card = document.createElement('div');
+                card.className = 'p-5 rounded-xl border border-gray-100 bg-gray-50 hover:bg-white hover:shadow-lg transition cursor-pointer group';
+                card.innerHTML = `
+                    <div class="text-3xl mb-3 group-hover:scale-110 transition transform origin-left">${menu.icon}</div>
+                    <h4 class="text-lg font-bold text-gray-800 mb-1 group-hover:text-primary transition">${menu.title}</h4>
+                    <p class="text-sm text-gray-500">${menu.desc}</p>
+                `;
+                menuGrid.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
