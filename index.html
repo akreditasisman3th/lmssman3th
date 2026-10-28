@@ -73,46 +73,97 @@
         </form>
 
         <p class="text-xs text-center text-gray-400 mt-8">
-            © 2026 SMAN 3 Tapung Hulu.
+            © 2026 SMAN 3 Tapung Hulu.<br>
         </p>
     </div>
 
-    <!-- DASHBOARD CONTAINER -->
-    <div id="dashboardView" class="hidden w-full max-w-5xl fade-in">
+    <!-- MAIN APP LAYOUT (SIDEBAR & KONTEN UTAMA) -->
+    <div id="appLayout" class="hidden fixed inset-0 w-full h-full bg-gray-50 flex overflow-hidden z-50">
         
-        <!-- Navbar -->
-        <nav class="bg-white shadow-md rounded-xl p-4 mb-6 flex justify-between items-center border-b-4 border-accent">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold">
-                    S3
-                </div>
-                <div>
-                    <h2 class="font-bold text-gray-800 leading-tight">LMS SMAN 3 Tapung Hulu</h2>
-                    <p id="userRoleBadge" class="text-xs font-semibold text-accent uppercase tracking-wider">Role</p>
-                </div>
-            </div>
-            <div>
-                <button onclick="logout()" class="text-sm font-semibold text-gray-500 hover:text-red-500 transition px-3 py-2 rounded-md hover:bg-red-50">
-                    Keluar
-                </button>
-            </div>
-        </nav>
+        <!-- Overlay untuk Sidebar di Layar HP -->
+        <div id="mobileOverlay" onclick="toggleSidebar()" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 z-20 md:hidden transition-opacity"></div>
 
-        <!-- Main Content -->
-        <div class="bg-white rounded-xl shadow-lg p-6 min-h-[60vh]">
-            <div class="mb-6 border-b pb-4">
-                <h3 class="text-2xl font-bold text-gray-800">Selamat datang, <span id="userNameDisplay" class="text-primaryDark">Nama User</span>!</h3>
-                <p class="text-gray-500 mt-1">Berikut adalah dashboard <span id="roleText" class="font-semibold"></span> Anda hari ini.</p>
+        <!-- Sidebar Navigation (Kiri) -->
+        <aside id="sidebar" class="w-64 bg-white border-r border-gray-200 flex-shrink-0 transition-transform transform -translate-x-full md:translate-x-0 absolute md:relative z-30 h-full flex flex-col shadow-xl md:shadow-none">
+            <!-- Area Logo & Nama Sekolah -->
+            <div class="h-16 flex items-center px-5 border-b border-gray-100 bg-white">
+                <img src="https://cdn.phototourl.com/member/2026-10-22-807db4f8-e31f-4ee0-a6d3-440b8bb6922f.png" alt="Logo SMAN 3" class="h-10 w-10 object-contain mr-3 rounded-full border border-gray-100 p-0.5">
+                <span class="font-bold text-lg text-primaryDark leading-tight tracking-wide">LMS<br><span class="text-sm text-gray-500">SMAN 3 TH</span></span>
+            </div>
+            
+            <!-- Daftar Menu -->
+            <div class="flex-1 overflow-y-auto py-4 scrollbar-hide">
+                <p class="px-5 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Menu Utama</p>
+                <ul id="sidebarMenu" class="space-y-1 px-3">
+                    <!-- Menu dinamis akan disuntikkan oleh JavaScript ke sini -->
+                </ul>
             </div>
 
-            <!-- Dynamic Menu Grid -->
-            <div id="menuGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
-                <!-- Cards will be injected here based on role -->
+            <!-- Footer Sidebar -->
+            <div class="p-4 border-t border-gray-100 bg-gray-50">
+                <p class="text-xs text-center text-gray-400">© 2026 SMAN 3 TH<br>Versi 2.0</p>
             </div>
+        </aside>
+
+        <!-- Area Utama (Kanan) -->
+        <div class="flex-1 flex flex-col h-full relative overflow-hidden bg-gray-50">
+            
+            <!-- Top Navbar (Atas) -->
+            <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-8 z-10 shadow-sm flex-shrink-0">
+                <div class="flex items-center">
+                    <!-- Tombol Hamburger untuk HP -->
+                    <button onclick="toggleSidebar()" class="md:hidden text-gray-500 hover:text-primary mr-4 p-1 focus:outline-none transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </button>
+                    <!-- Judul Halaman Aktif -->
+                    <h2 id="pageTitle" class="text-xl md:text-2xl font-bold text-gray-800 tracking-tight">Dasbor</h2>
+                </div>
+                
+                <!-- User Profile & Dropdown (Kanan Atas) -->
+                <div class="relative">
+                    <button onclick="toggleProfileMenu(event)" class="flex items-center space-x-3 focus:outline-none hover:bg-gray-50 p-1.5 md:p-2 rounded-xl transition duration-200 border border-transparent hover:border-gray-100">
+                        <div class="text-right hidden sm:block">
+                            <p id="topbarUserName" class="text-sm font-bold text-gray-800 leading-tight">Nama User</p>
+                            <p id="topbarUserRole" class="text-xs font-semibold text-primary uppercase tracking-wider">Role</p>
+                        </div>
+                        <div class="w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center font-bold shadow-sm border-2 border-white ring-2 ring-gray-100" id="topbarUserInitials">
+                            U
+                        </div>
+                        <svg class="w-4 h-4 text-gray-400 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    
+                    <!-- Isi Dropdown Menu -->
+                    <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 transform origin-top-right transition-all">
+                        <div class="px-4 py-3 border-b border-gray-50 sm:hidden">
+                            <p id="mobileUserName" class="text-sm font-bold text-gray-800">Nama User</p>
+                            <p id="mobileUserRole" class="text-xs font-semibold text-primary uppercase">Role</p>
+                        </div>
+                        <a href="#" onclick="openMenu('Profil', event)" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary transition">
+                            <span class="mr-3 text-lg">👤</span> Profil Saya
+                        </a>
+                        <a href="#" onclick="openMenu('Pengaturan', event)" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary transition">
+                            <span class="mr-3 text-lg">⚙️</span> Pengaturan
+                        </a>
+                        <div class="border-t border-gray-100 my-1"></div>
+                        <button onclick="logout()" class="w-full text-left px-4 py-2.5 text-sm text-red-600 font-semibold hover:bg-red-50 transition flex items-center">
+                            <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                            Keluar dari LMS
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Container Konten Dinamis -->
+            <main id="mainContent" class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 w-full max-w-7xl mx-auto">
+                <!-- Konten HTML khusus menu akan disuntikkan ke sini -->
+            </main>
         </div>
     </div>
 
     <script>
+        // Variabel Global untuk menyimpan data user yang login
+        let currentUser = { name: '', role: '' };
+
         function handleLogin(e) {
             e.preventDefault();
             const user = document.getElementById('username').value.trim();
@@ -124,10 +175,7 @@
             btn.disabled = true;
             errorMsg.classList.add('hidden');
 
-            // URL APPS SCRIPT DATABASE GOOGLE SHEET
             const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz6wqbNms4814EaGetmihagvuSS-0gbptZsi5RPoaa5XP1poCdtR0ayaLuGb5GpO5DV/exec";
-
-            // Panggil API Backend Google Sheets
             const apiUrl = `${APP_SCRIPT_URL}?action=login&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`;
             
             fetch(apiUrl)
@@ -140,28 +188,6 @@
                 });
         }
 
-        function onLoginSuccess(response) {
-            const btn = document.getElementById('loginBtn');
-            const errorMsg = document.getElementById('errorMessage');
-            
-            btn.innerText = "MASUK";
-            btn.disabled = false;
-
-            if (response.success) {
-                document.getElementById('loginView').classList.add('hidden');
-                document.getElementById('dashboardView').classList.remove('hidden');
-                
-                document.getElementById('userNameDisplay').innerText = response.name;
-                document.getElementById('userRoleBadge').innerText = response.role;
-                document.getElementById('roleText').innerText = response.role;
-
-                renderMenu(response.role);
-            } else {
-                errorMsg.innerText = response.message;
-                errorMsg.classList.remove('hidden');
-            }
-        }
-
         function onLoginError(error) {
             const btn = document.getElementById('loginBtn');
             btn.innerText = "MASUK";
@@ -172,73 +198,286 @@
             errorMsg.classList.remove('hidden');
         }
 
-        function logout() {
-            document.getElementById('dashboardView').classList.add('hidden');
-            document.getElementById('loginView').classList.remove('hidden');
-            document.getElementById('loginForm').reset();
+        function onLoginSuccess(response) {
+            const btn = document.getElementById('loginBtn');
+            btn.innerText = "MASUK";
+            btn.disabled = false;
+
+            if (response.success) {
+                // Sembunyikan Halaman Login, Tampilkan App Layout Utama
+                document.getElementById('loginView').classList.add('hidden');
+                document.getElementById('appLayout').classList.remove('hidden');
+                
+                // Simpan data user
+                currentUser = { name: response.name, role: response.role };
+
+                // Update teks di Header Topbar
+                document.getElementById('topbarUserName').innerText = response.name;
+                document.getElementById('topbarUserRole').innerText = response.role;
+                document.getElementById('mobileUserName').innerText = response.name;
+                document.getElementById('mobileUserRole').innerText = response.role;
+                
+                // Ambil inisial nama (huruf pertama)
+                document.getElementById('topbarUserInitials').innerText = response.name.charAt(0).toUpperCase();
+
+                // Render Sidebar Menu sesuai Role
+                renderSidebar(response.role);
+                
+                // Langsung Buka Halaman "Dasbor" secara otomatis saat login
+                openMenu('Dasbor');
+            } else {
+                const errorMsg = document.getElementById('errorMessage');
+                errorMsg.innerText = response.message;
+                errorMsg.classList.remove('hidden');
+            }
         }
 
-        function renderMenu(role) {
-            const menuGrid = document.getElementById('menuGrid');
-            menuGrid.innerHTML = ''; // Kosongkan menu sebelumnya
+        function logout() {
+            // Sembunyikan Layout App, Kembali ke Login
+            document.getElementById('appLayout').classList.add('hidden');
+            document.getElementById('loginView').classList.remove('hidden');
+            document.getElementById('loginForm').reset();
+            document.getElementById('profileDropdown').classList.add('hidden'); // Tutup dropdown
+        }
+
+        // ==========================================
+        // FUNGSI UNTUK MENGATUR SIDEBAR & DROPDOWN
+        // ==========================================
+
+        // Menampilkan Sidebar Menu di Kiri
+        function renderSidebar(role) {
+            const sidebarMenu = document.getElementById('sidebarMenu');
+            sidebarMenu.innerHTML = ''; 
 
             let menus = [];
 
-            if (role === 'Admin') {
+            if (role === 'Admin' || role === 'Guru') {
                 menus = [
-                    { title: 'Dasbor', icon: '🏠', desc: 'Ringkasan aktivitas LMS.' },
-                    { title: 'Manajemen Kelas', icon: '🏫', desc: 'Kelola ruang kelas dan jadwal.' },
-                    { title: 'Modul / Materi', icon: '📚', desc: 'Pusat materi pembelajaran.' },
-                    { title: 'Penugasan', icon: '✍️', desc: 'Pantau semua tugas masuk.' },
-                    { title: 'Evaluasi & Kuis', icon: '📝', desc: 'Kelola bank soal dan ujian.' },
-                    { title: 'Buku Nilai', icon: '📊', desc: 'Rekapitulasi nilai seluruh siswa.' },
-                    { title: 'Forum Diskusi', icon: '💬', desc: 'Komunikasi antar warga sekolah.' },
-                    { title: 'Daftar Pengguna', icon: '👥', desc: 'Manajemen akun pengguna LMS.' },
-                    { title: 'Absensi', icon: '✅', desc: 'Rekap kehadiran seluruh siswa.' }
-                ];
-            } else if (role === 'Guru') {
-                menus = [
-                    { title: 'Dasbor', icon: '🏠', desc: 'Ringkasan aktivitas mengajar.' },
-                    { title: 'Kelasku', icon: '🏫', desc: 'Akses kelas yang Anda ajar.' },
-                    { title: 'Materi Pembelajaran', icon: '📚', desc: 'Upload bahan ajar untuk siswa.' },
-                    { title: 'Penugasan', icon: '✍️', desc: 'Buat dan periksa tugas siswa.' },
-                    { title: 'Evaluasi & Kuis', icon: '📝', desc: 'Buat kuis dan ujian online.' },
-                    { title: 'Buku Nilai', icon: '📊', desc: 'Input dan rekap nilai kelas.' },
-                    { title: 'Forum Diskusi', icon: '💬', desc: 'Diskusi dengan siswa di kelas.' },
-                    { title: 'Peserta Didik', icon: '👥', desc: 'Lihat daftar siswa di kelas.' },
-                    { title: 'Absensi', icon: '✅', desc: 'Input kehadiran harian siswa.' }
+                    { title: 'Dasbor', icon: '🏠' },
+                    { title: 'Manajemen Kelas', icon: '🏫' },
+                    { title: 'Modul Pembelajaran', icon: '📚' },
+                    { title: 'Penugasan', icon: '✍️' },
+                    { title: 'Evaluasi & Kuis', icon: '📝' },
+                    { title: 'Buku Nilai', icon: '📊' },
+                    { title: 'Forum Diskusi', icon: '💬' },
+                    { title: 'Daftar Pengguna', icon: '👥' },
+                    { title: 'Absensi', icon: '✅' }
                 ];
             } else if (role === 'Murid') {
                 menus = [
-                    { title: 'Dasbor', icon: '🏠', desc: 'Ringkasan aktivitas belajar.' },
-                    { title: 'Ruang Belajar', icon: '🏫', desc: 'Masuk ke kelas online.' },
-                    { title: 'Materi Pembelajaran', icon: '📚', desc: 'Baca modul dari guru.' },
-                    { title: 'Tugas Saya', icon: '✍️', desc: 'Kerjakan dan kumpulkan tugas.' },
-                    { title: 'Kuis & Ujian', icon: '📝', desc: 'Ikuti evaluasi pembelajaran.' },
-                    { title: 'Nilai Saya', icon: '📊', desc: 'Lihat hasil evaluasi belajar.' },
-                    { title: 'Forum Diskusi', icon: '💬', desc: 'Tanya jawab dengan guru & teman.' },
-                    { title: 'Absensi', icon: '✅', desc: 'Cek persentase kehadiran saya.' }
+                    { title: 'Dasbor', icon: '🏠' },
+                    { title: 'Ruang Belajar', icon: '🏫' },
+                    { title: 'Modul Pembelajaran', icon: '📚' },
+                    { title: 'Tugas Saya', icon: '✍️' },
+                    { title: 'Kuis & Ujian', icon: '📝' },
+                    { title: 'Nilai Saya', icon: '📊' },
+                    { title: 'Forum Diskusi', icon: '💬' },
+                    { title: 'Absensi', icon: '✅' }
                 ];
             } else if (role === 'Wali Murid') {
                 menus = [
-                    { title: 'Dasbor', icon: '🏠', desc: 'Ringkasan aktivitas anak.' },
-                    { title: 'Tugas Anak', icon: '✍️', desc: 'Pantau tugas yang belum dikerjakan.' },
-                    { title: 'Nilai Anak', icon: '📊', desc: 'Lihat perkembangan akademik.' },
-                    { title: 'Forum Komunikasi', icon: '💬', desc: 'Kirim pesan ke wali kelas/guru.' },
-                    { title: 'Absensi Anak', icon: '✅', desc: 'Pantau kehadiran anak di sekolah.' }
+                    { title: 'Dasbor', icon: '🏠' },
+                    { title: 'Tugas Anak', icon: '✍️' },
+                    { title: 'Nilai Anak', icon: '📊' },
+                    { title: 'Forum Komunikasi', icon: '💬' },
+                    { title: 'Absensi Anak', icon: '✅' }
                 ];
             }
 
+            // Menyuntikkan list <li> ke dalam ul Sidebar
             menus.forEach(menu => {
-                const card = document.createElement('div');
-                card.className = 'p-5 rounded-xl border border-gray-100 bg-gray-50 hover:bg-white hover:shadow-lg transition cursor-pointer group';
-                card.innerHTML = `
-                    <div class="text-3xl mb-3 group-hover:scale-110 transition transform origin-left">${menu.icon}</div>
-                    <h4 class="text-lg font-bold text-gray-800 mb-1 group-hover:text-primary transition">${menu.title}</h4>
-                    <p class="text-sm text-gray-500">${menu.desc}</p>
+                const li = document.createElement('li');
+                const menuId = 'menu-' + menu.title.replace(/\s+/g, '-');
+                li.innerHTML = `
+                    <a href="#" id="${menuId}" onclick="openMenu('${menu.title}', event)" class="sidebar-link flex items-center space-x-3 px-4 py-3 rounded-xl text-gray-600 font-medium hover:bg-primary/10 hover:text-primary transition duration-200">
+                        <span class="text-xl w-6 text-center">${menu.icon}</span>
+                        <span>${menu.title}</span>
+                    </a>
                 `;
-                menuGrid.appendChild(card);
+                sidebarMenu.appendChild(li);
             });
+        }
+
+        // Buka / Tutup Sidebar di layar kecil (HP)
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        // Buka / Tutup Dropdown Profil di kanan atas
+        function toggleProfileMenu(e) {
+            if(e) e.stopPropagation();
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        // Menutup Dropdown secara otomatis jika klik di luar area
+        window.onclick = function(event) {
+            if (!event.target.closest('.relative')) {
+                const dropdown = document.getElementById('profileDropdown');
+                if (dropdown && !dropdown.classList.contains('hidden')) {
+                    dropdown.classList.add('hidden');
+                }
+            }
+        }
+
+        // ==========================================
+        // FUNGSI UNTUK MEMBUKA HALAMAN & KONTENNYA
+        // ==========================================
+
+        function openMenu(title, event) {
+            if(event) event.preventDefault(); // Mencegah scroll ke atas
+            
+            // 1. Ubah Judul di Header Atas
+            document.getElementById('pageTitle').innerText = title;
+
+            // 2. Beri efek "Aktif" pada link sidebar yang diklik
+            document.querySelectorAll('.sidebar-link').forEach(el => {
+                el.classList.remove('bg-primary/10', 'text-primary', 'font-semibold');
+                el.classList.add('text-gray-600');
+            });
+            const activeId = 'menu-' + title.replace(/\s+/g, '-');
+            const activeEl = document.getElementById(activeId);
+            if(activeEl) {
+                activeEl.classList.remove('text-gray-600');
+                activeEl.classList.add('bg-primary/10', 'text-primary', 'font-semibold');
+            }
+
+            // 3. Tutup Sidebar otomatis setelah diklik (Khusus tampilan HP)
+            if (window.innerWidth < 768) {
+                const sidebar = document.getElementById('sidebar');
+                if(!sidebar.classList.contains('-translate-x-full')) {
+                    toggleSidebar();
+                }
+            }
+
+            // 4. Tutup Dropdown profil (jika yang diklik dari dropdown)
+            document.getElementById('profileDropdown').classList.add('hidden');
+
+            // 5. Render Konten Halamannya
+            renderMenuContent(title);
+        }
+
+        function renderMenuContent(title) {
+            const contentArea = document.getElementById('mainContent');
+            const role = currentUser.role;
+            const userName = currentUser.name;
+            
+            // Efek Loading singkat
+            contentArea.innerHTML = `
+                <div class="flex justify-center items-center h-64 fade-in">
+                    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+                    <span class="ml-3 text-gray-500 font-medium">Memuat ${title}...</span>
+                </div>
+            `;
+
+            setTimeout(() => {
+                let html = '';
+                
+                // === DESAIN HALAMAN "DASBOR" (HOME) ===
+                if(title === 'Dasbor' || title === 'Beranda') {
+                    html = `
+                        <div class="fade-in">
+                            <!-- Banner Welcome -->
+                            <div class="bg-gradient-to-r from-primaryDark to-primary rounded-2xl p-6 md:p-10 text-white shadow-lg mb-8 relative overflow-hidden">
+                                <div class="relative z-10">
+                                    <h3 class="text-2xl md:text-3xl font-bold mb-2">Selamat datang, ${userName}!</h3>
+                                    <p class="text-primary-100 text-sm md:text-base opacity-90 max-w-lg">Semoga hari ini menyenangkan. Berikut adalah ringkasan aktivitas ${role} Anda di LMS SMAN 3 Tapung Hulu.</p>
+                                </div>
+                                <!-- Dekorasi Logo Transparan di Kanan Banner -->
+                                <img src="LOGO SMAN 3 TH.jpg" class="absolute right-0 bottom-0 opacity-10 transform translate-x-1/4 translate-y-1/4 w-64 h-64 rounded-full" alt="">
+                            </div>
+                            
+                            <!-- Widget Kartu Statistik -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+                                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center space-x-4 hover:shadow-md transition">
+                                    <div class="w-14 h-14 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center text-2xl shadow-inner">🏫</div>
+                                    <div><p class="text-gray-500 text-sm font-medium">Kelas Aktif</p><h4 class="text-2xl font-extrabold text-gray-800">12</h4></div>
+                                </div>
+                                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center space-x-4 hover:shadow-md transition">
+                                    <div class="w-14 h-14 rounded-full bg-green-50 text-green-500 flex items-center justify-center text-2xl shadow-inner">📚</div>
+                                    <div><p class="text-gray-500 text-sm font-medium">Materi Baru</p><h4 class="text-2xl font-extrabold text-gray-800">5</h4></div>
+                                </div>
+                                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center space-x-4 hover:shadow-md transition">
+                                    <div class="w-14 h-14 rounded-full bg-orange-50 text-accent flex items-center justify-center text-2xl shadow-inner">✍️</div>
+                                    <div><p class="text-gray-500 text-sm font-medium">Tugas/Ujian</p><h4 class="text-2xl font-extrabold text-gray-800">3</h4></div>
+                                </div>
+                                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center space-x-4 hover:shadow-md transition">
+                                    <div class="w-14 h-14 rounded-full bg-purple-50 text-purple-500 flex items-center justify-center text-2xl shadow-inner">💬</div>
+                                    <div><p class="text-gray-500 text-sm font-medium">Pesan Masuk</p><h4 class="text-2xl font-extrabold text-gray-800">8</h4></div>
+                                </div>
+                            </div>
+
+                            <!-- Papan Pengumuman Singkat -->
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                                <h4 class="text-lg font-bold text-gray-800 mb-4 border-l-4 border-accent pl-3">Pengumuman Terbaru</h4>
+                                <ul class="space-y-3">
+                                    <li class="flex items-start pb-3 border-b border-gray-50">
+                                        <span class="text-xs font-bold bg-red-100 text-red-600 px-2 py-1 rounded mt-0.5 mr-3 shrink-0">PENTING</span>
+                                        <div><p class="text-gray-800 font-medium">Ujian Tengah Semester Ganjil dimulai Senin depan.</p><p class="text-xs text-gray-500 mt-1">Oleh: Kurikulum - 2 hari yang lalu</p></div>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-xs font-bold bg-blue-100 text-blue-600 px-2 py-1 rounded mt-0.5 mr-3 shrink-0">INFO</span>
+                                        <div><p class="text-gray-800 font-medium">Jadwal ekskul Pramuka dimajukan menjadi pukul 15.00 WIB.</p><p class="text-xs text-gray-500 mt-1">Oleh: Kesiswaan - 4 hari yang lalu</p></div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                } 
+                // === DESAIN HALAMAN "KELAS / RUANG BELAJAR" ===
+                else if (title.includes('Kelas') || title.includes('Ruang Belajar')) {
+                    html = `
+                        <div class="fade-in">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-xl font-bold text-gray-800">Daftar Kelas Aktif</h3>
+                                ${role === 'Admin' || role === 'Guru' ? `<button class="bg-primary hover:bg-primaryDark text-white px-4 py-2 rounded-lg shadow-sm transition font-medium text-sm">+ Tambah Kelas</button>` : ''}
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition group">
+                                    <div class="h-24 bg-gradient-to-r from-blue-500 to-blue-400 p-4">
+                                        <h4 class="font-bold text-lg text-white group-hover:underline">Matematika Wajib</h4>
+                                        <p class="text-blue-100 text-sm">Kelas X IPA 1</p>
+                                    </div>
+                                    <div class="p-4 relative">
+                                        <div class="absolute -top-6 right-4 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow font-bold text-gray-500 border border-gray-100">B</div>
+                                        <p class="text-sm text-gray-600 mb-4">Pengajar: Bapak Budi</p>
+                                        <button class="w-full bg-gray-50 border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100 transition">Masuk Kelas</button>
+                                    </div>
+                                </div>
+                                <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition group">
+                                    <div class="h-24 bg-gradient-to-r from-green-500 to-green-400 p-4">
+                                        <h4 class="font-bold text-lg text-white group-hover:underline">Biologi</h4>
+                                        <p class="text-green-100 text-sm">Kelas X IPA 1</p>
+                                    </div>
+                                    <div class="p-4 relative">
+                                        <div class="absolute -top-6 right-4 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow font-bold text-gray-500 border border-gray-100">S</div>
+                                        <p class="text-sm text-gray-600 mb-4">Pengajar: Ibu Siti</p>
+                                        <button class="w-full bg-gray-50 border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100 transition">Masuk Kelas</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                // === DESAIN HALAMAN DEFAULT (Modul Lainnya) ===
+                else {
+                    html = `
+                        <div class="text-center py-20 fade-in">
+                            <div class="text-6xl mb-6">🚧</div>
+                            <h3 class="text-2xl font-bold text-gray-800 mb-3">Modul ${title}</h3>
+                            <p class="text-gray-500 max-w-md mx-auto leading-relaxed">Halaman ini sedang dalam tahap pengembangan sistem dan akan segera bisa Anda gunakan.</p>
+                            <div class="mt-8">
+                                <span class="bg-gray-200 text-gray-700 px-4 py-2 rounded-full text-sm font-medium">Hak Akses: ${role}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                contentArea.innerHTML = html;
+            }, 300); // Simulasi delay memuat data
         }
     </script>
 </body>
